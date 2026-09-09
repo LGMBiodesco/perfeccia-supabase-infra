@@ -12,6 +12,24 @@ name: perfeccia-supabase
 
 services:
 
+  app-migrator:
+    image: postgres:17-alpine
+    restart: "no"
+    mem_limit: 96m
+    cpus: 0.10
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./migrations:/migrations:ro
+      - ./migrations/run.sh:/migration-runner.sh:ro
+    entrypoint: ["/bin/sh", "/migration-runner.sh"]
+
   studio:
     image: supabase/studio:2026.08.03-sha-022b374
     restart: unless-stopped
@@ -91,6 +109,8 @@ services:
       timeout: 5s
       retries: 3
     depends_on:
+      app-migrator:
+        condition: service_completed_successfully
       studio:
         condition: service_healthy
     volumes:
