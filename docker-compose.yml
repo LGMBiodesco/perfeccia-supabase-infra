@@ -73,6 +73,10 @@ services:
     restart: unless-stopped
     mem_limit: 160m
     cpus: 0.15
+    # Easypanel routes the public domain to this internal listener.
+    # `expose` documents it to Compose without publishing a host port.
+    expose:
+      - "8000"
     networks:
       default:
         # Expose `envoy` and `kong` as network aliases, so internal configs
